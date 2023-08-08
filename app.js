@@ -1,34 +1,48 @@
-const express = require("express");
-const path = require("path");
 const connectDB = require("./config/database/db");
-const { expressMiddleware } = require("./config/middleware/express_middleware");
-const dotenv = require("dotenv");
-const swaggerJsDoc = require("swagger-jsdoc");
-const swaggerUi = require("swagger-ui-express");
+const paymentRoutes = require("./router/payment");
 
+const express = require("express");
+const mongoose = require("mongoose");
+const bodyParser = require("body-parser");
+const dotenv = require("dotenv");
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT;
+const port = process.env.PORT || 3000;
+
+
 connectDB();
-expressMiddleware(app);
 
-const swaggerOptions = require('./swagger');
-
-const swaggerDocs = swaggerJsDoc(swaggerOptions);
-app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
-
-
-app.use("/api/user", require("./router/user"));
-
-// router middleware
-
-app.get("/", (_, res) => {
-  return res.send("API running");
+app.use(bodyParser.json());
+// Middleware for handling CORS (Cross-Origin Resource Sharing)
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*"); // Allow requests from any origin
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept, Authorization"
+  );
+  if (req.method === "OPTIONS") {
+    res.header("Access-Control-Allow-Methods", "PUT, POST, PATCH, DELETE, GET");
+    return res.status(200).json({});
+  }
+  next();
 });
 
-app.use((err,req,res,next)=>{
-  return res.status(err.status).json({message:err.message});
-})
+// Routes
+app.use("/api/payments", paymentRoutes);
 
-app.listen(PORT, () => console.log(`Server started on port http://localhost:${PORT}`));
+// Error Handling Middleware
+app.use((req, res, next) => {
+  const error = new Error("Not found");
+  error.status = 404;
+  next(error);
+});
+
+app.use((err, req, res, next) => {
+  return res.status(err.status).json({ message: err.message });
+});
+
+// Start the server
+app.listen(port, () => {
+  console.log(`Server is running on port ${port}`);
+});
