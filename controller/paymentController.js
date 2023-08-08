@@ -1,16 +1,11 @@
-// controllers/paymentController.js
-
-// const PaymentMethod = require("../models/PaymentMethod");
 const Transaction = require("../models/transaction");
-// const PaymentProvider = require('../models/PaymentProvider');
-// const stripe = require("stripe")(process.env.STRIPE_SECRET_KEY);
 const paypal = require('paypal-rest-sdk');
 
 
 exports.initiatePayment = async (req, res) => {
   try {
     const { amount } = req.body;
-    const userId = req.userId; // Assuming user is authenticated and their ID is available
+    const userId = req.userId;
 
     // Configure PayPal SDK (Make sure to have PAYPAL_CLIENT_ID and PAYPAL_CLIENT_SECRET in your .env)
     paypal.configure({
@@ -26,8 +21,8 @@ exports.initiatePayment = async (req, res) => {
         payment_method: "paypal",
       },
       redirect_urls: {
-        return_url: "http://localhost:3000/api/payments/confirm-payment", // Replace with your return URL
-        cancel_url: "http://localhost:3000/api/payments/cancel-payment", // Replace with your cancel URL
+        return_url: "http://localhost:3000/api/payments/confirm-payment", // Replace with  return URL
+        cancel_url: "http://localhost:3000/api/payments/cancel-payment", // Replace with  cancel URL
       },
       transactions: [
         {
@@ -54,9 +49,9 @@ exports.initiatePayment = async (req, res) => {
             // Other PayPal-related fields if needed
           },
           amount,
-          currency: "usd", // Replace with the desired currency
+          currency: "usd", 
           status: "pending",
-          paymentProvider: payment.paymentProvider, // This might need to be handled differently
+          paymentProvider: payment.paymentProvider, 
           paymentIntentId: payment.id,
         });
 
